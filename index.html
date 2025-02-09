@@ -8,19 +8,19 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background-color: #f0f4f8; /* Soft light grayish-blue */
+            background-color: #f0f4f8;
             color: #333;
             margin: 20px;
         }
         #player-container {
-            background: linear-gradient(to right, #6a11cb, #2575fc); /* Gradient from purple to blue */
+            background: linear-gradient(to right, #6a11cb, #2575fc);
             padding: 30px;
             border-radius: 20px;
             display: inline-block;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
         }
         button {
-            background-color: #ff4081; /* Bright pink background */
+            background-color: #ff4081;
             color: white;
             border: none;
             padding: 15px 25px;
@@ -28,11 +28,11 @@
             cursor: pointer;
             font-size: 18px;
             border-radius: 10px;
-            transition: all 0.3s ease; /* Smooth transition on hover */
+            transition: all 0.3s ease;
         }
         button:hover {
-            background-color: #e1004b; /* Darker pink on hover */
-            transform: scale(1.1); /* Slight grow effect on hover */
+            background-color: #e1004b;
+            transform: scale(1.1);
         }
         #playlist {
             list-style: none;
@@ -42,7 +42,7 @@
         #playlist li {
             cursor: pointer;
             padding: 12px;
-            background: #00bcd4; /* Cyan blue background */
+            background: #00bcd4;
             margin: 8px;
             border-radius: 10px;
             color: white;
@@ -50,21 +50,60 @@
             transition: background 0.3s ease;
         }
         #playlist li:hover {
-            background: #008c95; /* Darker cyan on hover */
+            background: #008c95;
         }
         h1 {
-            color: #ff6347; /* Tomato red for title */
+            color: #ff6347;
             font-size: 2.5em;
         }
         h3 {
-            color: #ff9800; /* Bright orange for "Playlist" text */
+            color: #ff9800;
             font-size: 1.8em;
+        }
+        #search-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        #search-bar input {
+            padding: 10px;
+            font-size: 16px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        #search-results {
+            position: absolute;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 250px;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 9999;
+        }
+        #search-results div {
+            padding: 10px;
+            cursor: pointer;
+            background: #f9f9f9;
+            border-bottom: 1px solid #ddd;
+            transition: background 0.3s ease;
+        }
+        #search-results div:hover {
+            background: #efefef;
         }
     </style>
 </head>
 <body>
 
     <h1>Music Player</h1>
+    <div id="search-bar">
+        <input type="text" id="searchInput" placeholder="Search for a song..." oninput="searchSongs()" />
+        <div id="search-results"></div>
+    </div>
     <div id="player-container">
         <audio id="audioPlayer" controls>
             Your browser does not support the audio element.
@@ -75,6 +114,7 @@
         <button onclick="nextTrack()">Next</button>
         <button id="shuffleBtn" onclick="shufflePlaylist()">Mix Off</button>
         <button id="repeatBtn" onclick="toggleRepeat()">Repeat Off</button>
+        <button id="alphabetizeBtn" onclick="toggleAlphabetize()">Alphabetize Off</button>
         <br><br>
         <h3>Playlist</h3>
         <ul id="playlist"></ul>
@@ -101,37 +141,38 @@
             "East from the West.mp3",
             "They Came Out Serving God.mp3",
             "There Is.mp3",
-            "I've Got That Old Time Religion.mp3"
+            "I've Got That Old Time Religion.mp3",
+            "I Serve A God.mp3"
         ];
 
         let currentTrack = 0;
         let isShuffled = false;
         let repeatMode = false;
+        let isAlphabetized = false;
         let shuffledPlaylist = [...playlist];
         let audioPlayer = document.getElementById("audioPlayer");
         let playlistElement = document.getElementById("playlist");
         let shuffleButton = document.getElementById("shuffleBtn");
         let repeatButton = document.getElementById("repeatBtn");
+        let alphabetizeButton = document.getElementById("alphabetizeBtn");
+        let searchResults = document.getElementById("search-results");
 
-        // Load Playlist into the UI
         function loadPlaylist() {
             playlistElement.innerHTML = "";
             (isShuffled ? shuffledPlaylist : playlist).forEach((track, index) => {
                 let listItem = document.createElement("li");
-                listItem.textContent = track.split("/").pop(); // Show only filename
+                listItem.textContent = track.split("/").pop();
                 listItem.onclick = () => playSelectedTrack(index);
                 playlistElement.appendChild(listItem);
             });
         }
 
-        // Play selected track
         function playSelectedTrack(index) {
             currentTrack = index;
             audioPlayer.src = (isShuffled ? shuffledPlaylist : playlist)[currentTrack];
             audioPlayer.play();
         }
 
-        // Play/Pause Functionality
         function playPause() {
             if (audioPlayer.paused) {
                 audioPlayer.play();
@@ -140,10 +181,9 @@
             }
         }
 
-        // Next Track (Auto-Play Next Song)
         function nextTrack() {
             if (repeatMode) {
-                audioPlayer.play(); // Repeat same track
+                audioPlayer.play();
             } else {
                 currentTrack = (currentTrack + 1) % (isShuffled ? shuffledPlaylist.length : playlist.length);
                 audioPlayer.src = (isShuffled ? shuffledPlaylist : playlist)[currentTrack];
@@ -151,43 +191,59 @@
             }
         }
 
-        // Previous Track
         function prevTrack() {
             currentTrack = (currentTrack - 1 + (isShuffled ? shuffledPlaylist.length : playlist.length)) % (isShuffled ? shuffledPlaylist.length : playlist.length);
             audioPlayer.src = (isShuffled ? shuffledPlaylist : playlist)[currentTrack];
             audioPlayer.play();
         }
 
-        // Shuffle Functionality
         function shufflePlaylist() {
             if (!isShuffled) {
-                shuffledPlaylist = [...playlist].sort(() => Math.random() - 0.5); // Shuffle playlist
+                shuffledPlaylist = [...playlist].sort(() => Math.random() - 0.5);
                 isShuffled = true;
                 shuffleButton.textContent = "Mix On";
             } else {
-                isShuffled = false; // Return to normal order
+                isShuffled = false;
                 shuffleButton.textContent = "Mix Off";
             }
             currentTrack = 0;
             loadPlaylist();
-            playSelectedTrack(currentTrack);
         }
 
-        // Toggle Repeat Mode
         function toggleRepeat() {
             repeatMode = !repeatMode;
             repeatButton.textContent = repeatMode ? "Repeat On" : "Repeat Off";
         }
 
-        // Auto-load first track
+        function toggleAlphabetize() {
+            isAlphabetized = !isAlphabetized;
+            playlist = isAlphabetized ? [...playlist].sort() : [...shuffledPlaylist];
+            alphabetizeButton.textContent = isAlphabetized ? "Alphabetize On" : "Alphabetize Off";
+            loadPlaylist();
+        }
+
+        function searchSongs() {
+            let query = document.getElementById("searchInput").value.toLowerCase();
+            searchResults.innerHTML = "";
+            if (query) {
+                let filtered = playlist.filter(song => song.toLowerCase().includes(query));
+                filtered.forEach(song => {
+                    let result = document.createElement("div");
+                    result.textContent = song;
+                    result.onclick = () => {
+                        playSelectedTrack(playlist.indexOf(song));
+                        searchResults.style.display = "none";
+                    };
+                    searchResults.appendChild(result);
+                });
+                searchResults.style.display = "block";
+            } else {
+                searchResults.style.display = "none";
+            }
+        }
+
         audioPlayer.src = playlist[currentTrack];
-
-        // Auto-play next song when the current one ends
-        audioPlayer.addEventListener("ended", function() {
-            nextTrack();
-        });
-
-        // Load playlist when page loads
+        audioPlayer.addEventListener("ended", nextTrack);
         loadPlaylist();
     </script>
 
