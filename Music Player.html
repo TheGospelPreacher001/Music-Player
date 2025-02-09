@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f4f8; /* Soft light grayish-blue */
+            color: #333;
+            margin: 20px;
+        }
+        #player-container {
+            background: linear-gradient(to right, #6a11cb, #2575fc); /* Gradient from purple to blue */
+            padding: 30px;
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+        }
+        button {
+            background-color: #ff4081; /* Bright pink background */
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 10px;
+            transition: all 0.3s ease; /* Smooth transition on hover */
+        }
+        button:hover {
+            background-color: #e1004b; /* Darker pink on hover */
+            transform: scale(1.1); /* Slight grow effect on hover */
+        }
+        #playlist {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+        #playlist li {
+            cursor: pointer;
+            padding: 12px;
+            background: #00bcd4; /* Cyan blue background */
+            margin: 8px;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        #playlist li:hover {
+            background: #008c95; /* Darker cyan on hover */
+        }
+        h1 {
+            color: #ff6347; /* Tomato red for title */
+            font-size: 2.5em;
+        }
+        h3 {
+            color: #ff9800; /* Bright orange for "Playlist" text */
+            font-size: 1.8em;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Music Player</h1>
+    <div id="player-container">
+        <audio id="audioPlayer" controls>
+            Your browser does not support the audio element.
+        </audio>
+        <br>
+        <button onclick="playPause()">Play/Pause</button>
+        <button onclick="prevTrack()">Previous</button>
+        <button onclick="nextTrack()">Next</button>
+        <button id="shuffleBtn" onclick="shufflePlaylist()">Mix Off</button>
+        <button id="repeatBtn" onclick="toggleRepeat()">Repeat Off</button>
+        <br><br>
+        <h3>Playlist</h3>
+        <ul id="playlist"></ul>
+    </div>
+
+    <script>
+        let playlist = [
+            "A Way to Escape.mp3",
+            "Only Jesus Satisfies.mp3",
+            "Jesus Signed My Pardon.mp3",
+            "Mansion over the Hiltop.mp3",
+            "Love Grew Where the Blood Fell.mp3",
+            "One of His Own.mp3",
+            "The Old Gospel Ship.mp3",
+            "I've Never Been Sorry.mp3",
+            "I'm Too Far From Where I Started.mp3",
+            "I Want to Sing.mp3",
+            "I Won't Turn Back.mp3",
+            "I Know a Man Who Can.mp3",
+            "Home in Heaven.mp3",
+            "He Can Move the Highest Mountain.mp3",
+            "Happy Home Above.mp3",
+            "He'll Be To You.mp3",
+            "Everybody Will Be Happy.mp3",
+            "East from the West.mp3",
+            "They Came Out Serving God.mp3",
+            "There Is.mp3",
+            "I've Got That Old Time Religion.mp3",
+            "music/song.mp3"
+        ];
+
+        let currentTrack = 0;
+        let isShuffled = false;
+        let repeatMode = false;
+        let shuffledPlaylist = [...playlist];
+        let audioPlayer = document.getElementById("audioPlayer");
+        let playlistElement = document.getElementById("playlist");
+        let shuffleButton = document.getElementById("shuffleBtn");
+        let repeatButton = document.getElementById("repeatBtn");
+
+        // Load Playlist into the UI
+        function loadPlaylist() {
+            playlistElement.innerHTML = "";
+            (isShuffled ? shuffledPlaylist : playlist).forEach((track, index) => {
+                let listItem = document.createElement("li");
+                listItem.textContent = track.split("/").pop(); // Show only filename
+                listItem.onclick = () => playSelectedTrack(index);
+                playlistElement.appendChild(listItem);
+            });
+        }
+
+        // Play selected track
+        function playSelectedTrack(index) {
+            currentTrack = index;
+            audioPlayer.src = (isShuffled ? shuffledPlaylist : playlist)[currentTrack];
+            audioPlayer.play();
+        }
+
+        // Play/Pause Functionality
+        function playPause() {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+            } else {
+                audioPlayer.pause();
+            }
+        }
+
+        // Next Track (Auto-Play Next Song)
+        function nextTrack() {
+            if (repeatMode) {
+                audioPlayer.play(); // Repeat same track
+            } else {
+                currentTrack = (currentTrack + 1) % (isShuffled ? shuffledPlaylist.length : playlist.length);
+                audioPlayer.src = (isShuffled ? shuffledPlaylist : playlist)[currentTrack];
+                audioPlayer.play();
+            }
+        }
+
+        // Previous Track
+        function prevTrack() {
+            currentTrack = (currentTrack - 1 + (isShuffled ? shuffledPlaylist.length : playlist.length)) % (isShuffled ? shuffledPlaylist.length : playlist.length);
+            audioPlayer.src = (isShuffled ? shuffledPlaylist : playlist)[currentTrack];
+            audioPlayer.play();
+        }
+
+        // Shuffle Functionality
+        function shufflePlaylist() {
+            if (!isShuffled) {
+                shuffledPlaylist = [...playlist].sort(() => Math.random() - 0.5); // Shuffle playlist
+                isShuffled = true;
+                shuffleButton.textContent = "Mix On";
+            } else {
+                isShuffled = false; // Return to normal order
+                shuffleButton.textContent = "Mix Off";
+            }
+            currentTrack = 0;
+            loadPlaylist();
+            playSelectedTrack(currentTrack);
+        }
+
+        // Toggle Repeat Mode
+        function toggleRepeat() {
+            repeatMode = !repeatMode;
+            repeatButton.textContent = repeatMode ? "Repeat On" : "Repeat Off";
+        }
+
+        // Auto-load first track
+        audioPlayer.src = playlist[currentTrack];
+
+        // Auto-play next song when the current one ends
+        audioPlayer.addEventListener("ended", function() {
+            nextTrack();
+        });
+
+        // Load playlist when page loads
+        loadPlaylist();
+    </script>
+
+</body>
+</html>
