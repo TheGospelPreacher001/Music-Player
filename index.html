@@ -109,6 +109,7 @@
             Your browser does not support the audio element.
         </audio>
         <br>
+        <p id="currentTrackName" style="color: white; font-size: 18px; margin-top: 10px;"></p>
         <button onclick="playPause()">Play/Pause</button>
         <button onclick="prevTrack()">Previous</button>
         <button onclick="nextTrack()">Next</button>
@@ -138,11 +139,15 @@
             "He Can Move the Highest Mountain.mp3",
             "Happy Home Above.mp3",
             "He'll Be To You.mp3",
+            "Everybody Will be Happy.mp3",
             "East from the West.mp3",
             "They Came Out Serving God.mp3",
             "There Is.mp3",
             "I've Got That Old Time Religion.mp3",
-            "I Serve A God.mp3"
+            "No Regrets.mp3",
+            "I Serve A God.mp3",
+            "It Pays to Serve the Lord.mp3",
+            "Born To Serve the Lord.mp3"
         ];
 
         let currentTrack = 0;
@@ -169,7 +174,9 @@
 
         function playSelectedTrack(index) {
             currentTrack = index;
-            audioPlayer.src = (isShuffled ? shuffledPlaylist : playlist)[currentTrack];
+            let trackName = (isShuffled ? shuffledPlaylist : playlist)[currentTrack];
+            audioPlayer.src = trackName;
+            document.getElementById("currentTrackName").textContent = "Now Playing: " + trackName;
             audioPlayer.play();
         }
 
@@ -186,14 +193,18 @@
                 audioPlayer.play();
             } else {
                 currentTrack = (currentTrack + 1) % (isShuffled ? shuffledPlaylist.length : playlist.length);
-                audioPlayer.src = (isShuffled ? shuffledPlaylist : playlist)[currentTrack];
+                let trackName = (isShuffled ? shuffledPlaylist : playlist)[currentTrack];
+                audioPlayer.src = trackName;
+                document.getElementById("currentTrackName").textContent = "Now Playing: " + trackName;
                 audioPlayer.play();
             }
         }
 
         function prevTrack() {
             currentTrack = (currentTrack - 1 + (isShuffled ? shuffledPlaylist.length : playlist.length)) % (isShuffled ? shuffledPlaylist.length : playlist.length);
-            audioPlayer.src = (isShuffled ? shuffledPlaylist : playlist)[currentTrack];
+            let trackName = (isShuffled ? shuffledPlaylist : playlist)[currentTrack];
+            audioPlayer.src = trackName;
+            document.getElementById("currentTrackName").textContent = "Now Playing: " + trackName;
             audioPlayer.play();
         }
 
